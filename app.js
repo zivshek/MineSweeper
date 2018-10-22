@@ -5,7 +5,8 @@ let cols;
 let rows;
 let totalCells;
 let grid;
-let totalMines = 90;
+let totalMines = 100;
+let withdraws = 1;
 
 function setup() {
     createCanvas(gridw + 1, gridh + 1);
@@ -17,18 +18,24 @@ function setup() {
     grid = new Array(totalCells);
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            grid[c + r * cols] = new Cell(c * cellw, r * cellw, cellw);
+            grid[c + r * cols] = new Cell(r, c, cellw);
         }
     }
 
     // generate certain nums of mines
     for (let i = 0; i < totalMines; i++) {
         let ran = -1;
+        // keep generating a random index if the cell at that index is already a mine
+        // this might be very inefficient if mines are more than half of number of cells
         do {
             ran = int(random(0, totalCells - 1))
-        } while (grid[ran].revealed);
+        } while (grid[ran].mine);
 
         grid[ran].mine = true;
+    }
+
+    for (let i = 0; i < totalCells; i++) {
+        grid[i].countMines();
     }
 
     textSize(20);
@@ -61,7 +68,6 @@ function mousePressed() {
 }
 
 function getCell(x, y) {
-    console.log(x, y);
     return grid[y + x * cols];
 }
 
