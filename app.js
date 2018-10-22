@@ -1,15 +1,24 @@
-let gridw = 900;
-let gridh = 600;
+let canvasw = 900;
+let canvash = 600;
+let gridw = 850;
+let gridh = 500;
+let marginx = (canvasw - gridw) / 2;
+let marginy = (canvash - gridh) / 2;
 let cellw = 30;
 let cols;
 let rows;
 let totalCells;
 let grid;
-let totalMines = 100;
+let totalMines = 30;
 let withdraws = 1;
+let gameOver = false;
+
+// mouse button vars
+let leftClick = rightClick = false;
+let mx = my = -1;
 
 function setup() {
-    createCanvas(gridw + 1, gridh + 1);
+    createCanvas(canvasw, canvash);
     cols = floor(gridw / cellw);
     rows = floor(gridh / cellw);
     totalCells = cols * rows;
@@ -38,7 +47,6 @@ function setup() {
         grid[i].countMines();
     }
 
-    textSize(20);
     textAlign(CENTER);
 
     frameRate(10);
@@ -48,21 +56,79 @@ function setup() {
 
 function draw() {
     background(255);
+    // handle mouse evts before drawing
+    mouseHandler();
     for (let i = 0; i < totalCells; i++) {
         grid[i].draw();
+    }
+
+    if (gameOver) {
+        fill(185, 229, 123);
+        rect(300, 200, 300, 200);
+        textSize(50);
+        fill(52, 66, 145);
+        text("Game Over", 450, 315);
     }
 }
 
 function mousePressed() {
-    // floor will lead to the wrong direction
-    if (mouseX > 0 && mouseX < gridw && mouseY > 0 && mouseY < gridh) {
-        let c = ~~(mouseX / cellw);
-        let r = ~~(mouseY / cellw);
-        if (mouseButton == LEFT) {
-            getCell(r, c).reveal();
+    if (mouseButton === LEFT) {
+        leftClick = true;
+    }
+    if (mouseButton === RIGHT) {
+        rightClick = true;
+    }
+
+    mx = mouseX - marginx;
+    my = mouseY - marginy;
+}
+
+function mouseReleased() {
+    if (mouseButton == LEFT)
+        leftClick = false;
+    if (mouseButton == RIGHT)
+        rightClick = false;
+}
+
+function mouseHandler() {
+    if (!gameOver) {
+        if (mx > 0 && mx < gridw && my > 0 && my < gridh) {
+            // floor() may lead to the wrong direction
+            // thus we'r hacking by using ~~
+            let c = ~~(mx / cellw);
+            let r = ~~(my / cellw);
+            let cell = getCell(r, c);
+            if (leftClick && !rightClick) {
+                cell.reveal();
+            }
+            else if (rightClick && !leftClick) {
+                cell.mark();
+            }
+            else if (leftClick && rightClick) {
+                let markedCount = 0;
+                for (let i = 0; i < cell.neighbors.length; i++) {
+                    if (cell.neighbors[i].marked) 
+                        markedCount++;
+                }
+
+                // if marked count equals to the value the cell has, reveal all neighbours
+                if (markedCount > 0 && markedCount === cell.value) {
+                    for (let i = 0; i < cell.neighbors.length; i++) {
+                        if (!cell.neighbors[i].marked) 
+                            cell.neighbors[i].reveal();
+                    }
+                    console.log("ha");
+                }
+            }
+
+            // when the evt is handled, reset mouse positions
+            mx = my = -1;
         }
-        else if (mouseButton == RIGHT) {
-            getCell(r, c).mark();
+    }
+    else {
+        if (mx > 300 && mx < 600 && my > 200 && my < 400) {
+            gameOver = false;
+            setup();
         }
     }
 }

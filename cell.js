@@ -7,8 +7,8 @@ class Cell {
         this.marked = false;
         this.r = r;
         this.c = c;
-        this.x = c * w;
-        this.y = r * w;
+        this.x = c * w + marginx;
+        this.y = r * w + marginy;
         this.width = w;
         this.value = -1;
 
@@ -16,7 +16,7 @@ class Cell {
     }
 
     mark() {
-        this.marked = true;
+        this.marked = !this.marked;
     }
 
     countMines() {
@@ -47,7 +47,13 @@ class Cell {
     }
 
     reveal() {
-        this.revealed = true;
+        if (this.revealed === false) {
+            this.revealed = true;
+            if (this.mine) {
+                gameOver = true;
+            }
+        }
+
         if (this.value === 0) {
             for (let i = 0; i < this.neighbors.length; i++) {
                 // do not reveal those are already revealed
@@ -89,6 +95,7 @@ class Cell {
                     default:
                     {
                         // draw the value
+                        textSize(20);
                         fill(0);
                         text(this.value, this.x + this.width / 2, this.y + this.width / 2 + 8);
                     }
