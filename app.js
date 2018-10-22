@@ -12,6 +12,8 @@ function setup() {
     cols = floor(gridw / cellw);
     rows = floor(gridh / cellw);
     totalCells = cols * rows;
+
+    // 1D array
     grid = new Array(totalCells);
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
