@@ -65,6 +65,7 @@ class Cell {
     }
 
     draw() {
+        rectMode(CORNER);
         // draw this grid lines
         stroke(180, 187, 198);
         if (!this.revealed) {

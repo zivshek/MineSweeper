@@ -11,11 +11,17 @@ let totalCells;
 let grid;
 let totalMines = 30;
 let withdraws = 1;
+let gameWin = false;
+let gameWinButton;
 let gameOver = false;
-
+let gameOverButton;
+let markMode = false;
+let toggleModeButton;
+let toggleOnColor = 'rgb(255, 204, 0)';
+let toggleOffColor = 'rgb(255, 102, 102)';
 // mouse button vars
-let leftClick = rightClick = false;
-let mx = my = -1;
+let singleClick = doubleClick = false;
+let mx, my;
 
 function setup() {
     createCanvas(canvasw, canvash);
@@ -47,6 +53,14 @@ function setup() {
         grid[i].countMines();
     }
 
+    // create the toggle mode button and game over button
+    gameOverButton = new CustomButton(canvasw/2, canvash - marginy, 150, 35, "Game Over");
+    gameWinButton = new CustomButton(canvasw/2, canvash - marginy, 150, 35, "You Win!!");
+    toggleModeButton = new CustomButton(canvasw - 150/2 - marginx - 10, marginy/2, 150, 35, "Mark Mode Off");
+    toggleModeButton.backgroundColor = toggleOffColor;
+
+    mx = my = -1;
+
     textAlign(CENTER);
 
     frameRate(10);
@@ -57,54 +71,79 @@ function setup() {
 function draw() {
     background(255);
     // handle mouse evts before drawing
-    mouseHandler();
     for (let i = 0; i < totalCells; i++) {
         grid[i].draw();
     }
 
+    toggleModeButton.draw();
+
     if (gameOver) {
-        fill(185, 229, 123);
-        rect(300, 200, 300, 200);
-        textSize(50);
-        fill(52, 66, 145);
-        text("Game Over", 450, 315);
+        gameOverButton.draw();
+    }
+    else if (gameWin)
+    {
+        gameWinButton.draw();
     }
 }
 
-function mousePressed() {
+function mouseClicked() {
     if (mouseButton === LEFT) {
-        leftClick = true;
-    }
-    if (mouseButton === RIGHT) {
-        rightClick = true;
+        singleClick = true;
     }
 
     mx = mouseX - marginx;
     my = mouseY - marginy;
+    mouseHandler();
+    // reset the flag after the click's handled
+    singleClick = false;
 }
 
-function mouseReleased() {
-    if (mouseButton == LEFT)
-        leftClick = false;
-    if (mouseButton == RIGHT)
-        rightClick = false;
+function doubleClicked() {
+    if (mouseButton === LEFT) {
+        doubleClick = true;
+    }
+
+    mx = mouseX - marginx;
+    my = mouseY - marginy;
+
+    mouseHandler();
+
+    doubleClick = false;
+}
+
+function keyPressed() {
+    if (key == 't') 
+        toggleMode();
+}
+
+function toggleMode() {
+    markMode = !markMode;
+    if (markMode) {
+        toggleModeButton.backgroundColor = toggleOnColor;
+        toggleModeButton.text = 'Mark Mode On';
+    }
+    else {
+        toggleModeButton.backgroundColor = toggleOffColor;
+        toggleModeButton.text = 'Mark Mode Off';
+    }
 }
 
 function mouseHandler() {
-    if (!gameOver) {
+    if (!gameOver && !gameWin) {
         if (mx > 0 && mx < gridw && my > 0 && my < gridh) {
             // floor() may lead to the wrong direction
             // thus we'r hacking by using ~~
             let c = ~~(mx / cellw);
             let r = ~~(my / cellw);
             let cell = getCell(r, c);
-            if (leftClick && !rightClick) {
-                cell.reveal();
+
+            if (singleClick) {
+                if (!markMode)
+                    cell.reveal();
+                else
+                    cell.mark();
             }
-            else if (rightClick && !leftClick) {
-                cell.mark();
-            }
-            else if (leftClick && rightClick) {
+            else if (doubleClick) {
                 let markedCount = 0;
                 for (let i = 0; i < cell.neighbors.length; i++) {
                     if (cell.neighbors[i].marked) 
@@ -117,17 +156,31 @@ function mouseHandler() {
                         if (!cell.neighbors[i].marked) 
                             cell.neighbors[i].reveal();
                     }
-                    console.log("ha");
                 }
             }
-
             // when the evt is handled, reset mouse positions
             mx = my = -1;
+
+            if (winCheck())
+                gameWin = true;
+        }
+        // handle UI button clicks
+        else {
+            if (toggleModeButton.clicked(mouseX, mouseY)) {
+                toggleMode();
+            }
         }
     }
-    else {
-        if (mx > 300 && mx < 600 && my > 200 && my < 400) {
+    else if (gameOver) {
+        // use mouse positions here directly instead of mx, my      
+        if (gameOverButton.clicked(mouseX, mouseY)) {
             gameOver = false;
+            setup();
+        }
+    }
+    else if (gameWin) {
+        if (gameWinButton.clicked(mouseX, mouseY)) {
+            gameWin = false;
             setup();
         }
     }
@@ -135,6 +188,17 @@ function mouseHandler() {
 
 function getCell(x, y) {
     return grid[y + x * cols];
+}
+
+function winCheck() {
+    let win = true;
+    for (let i = 0; i < totalCells; i++) {
+        if (!grid[i].mine && !grid[i].revealed) {
+            win = false;
+            break;
+        }
+    }
+    return win;
 }
 
 function revealAll() {
