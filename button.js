@@ -1,7 +1,7 @@
 
 class CustomButton {
 
-    constructor(x, y, w, h, text) {
+    constructor(x, y, w, h, text, p5) {
         this.x = x;
         this.y = y;
         this.w = w;
@@ -9,6 +9,7 @@ class CustomButton {
         this.text = text;
         this.backgroundColor = 'rgb(185, 229, 123)';
         this.fontColor = 'rgb(52, 66, 145)';
+        this.p5 = p5;
     }
 
     clicked(mx, my) {
@@ -17,11 +18,11 @@ class CustomButton {
     }
 
     draw() {
-        rectMode(CENTER);
-        fill(this.backgroundColor);
-        rect(this.x, this.y, this.w, this.h);
-        textSize(20);
-        fill(this.fontColor);
-        text(this.text, this.x, this.y + this.h/4.5);
+        this.p5.rectMode(this.p5.CENTER);
+        this.p5.fill(this.backgroundColor);
+        this.p5.rect(this.x, this.y, this.w, this.h);
+        this.p5.textSize(20);
+        this.p5.fill(this.fontColor);
+        this.p5.text(this.text, this.x, this.y + this.h/4.5);
     }
 }

@@ -1,18 +1,23 @@
 class Cell {
 
-    constructor(r, c, w) {
+    constructor(r, c, w, mrgx, mrgy, rows, cols, grid, p5) {
         //this.mine = random() < 0.5 ? true : false;
         this.mine = false;
         this.revealed = false;
         this.marked = false;
         this.r = r;
         this.c = c;
-        this.x = c * w + marginx;
-        this.y = r * w + marginy;
+        this.x = c * w + mrgx;
+        this.y = r * w + mrgy;
         this.width = w;
         this.value = -1;
 
+        this.rs = rows;
+        this.cs = cols;
+        this.grid = grid;
+
         this.neighbors = [];
+        this.p5 = p5;
     }
 
     mark() {
@@ -38,8 +43,8 @@ class Cell {
                 for (let j = -1; j <= 1; j++) {
                     let tempR = this.r + i;
                     let tempC = this.c + j;
-                    if (tempR >= 0 && tempR < rows && tempC >= 0 && tempC < cols) {
-                        this.neighbors.push(grid[tempC + tempR * cols]);
+                    if (tempR >= 0 && tempR < this.rs && tempC >= 0 && tempC < this.cs) {
+                        this.neighbors.push(this.grid[tempC + tempR * this.cs]);
                     }
                 }
             }
@@ -49,9 +54,6 @@ class Cell {
     reveal() {
         if (this.revealed === false) {
             this.revealed = true;
-            if (this.mine) {
-                gameOver = true;
-            }
         }
 
         if (this.value === 0) {
@@ -65,28 +67,28 @@ class Cell {
     }
 
     draw() {
-        rectMode(CORNER);
+        this.p5.rectMode(this.p5.CORNER);
         // draw this grid lines
-        stroke(180, 187, 198);
+        this.p5.stroke(180, 187, 198);
         if (!this.revealed) {
             // draw a white rect if not revealed
-            fill(255);
-            rect(this.x, this.y, this.width, this.width);
+            this.p5.fill(255);
+            this.p5.rect(this.x, this.y, this.width, this.width);
 
             // draw a triangle as a marker
             if (this.marked) {
-                fill(255, 255, 0);
-                triangle(this.x + 7, this.y + 5, this.x + 7, this.y + 25, this.x + 25, this.y + this.width / 2);
+                this.p5.fill(255, 255, 0);
+                this.p5.triangle(this.x + 7, this.y + 5, this.x + 7, this.y + 25, this.x + 25, this.y + this.width / 2);
             }
         }
         else{
             // if it is revealed, draw a background first
-            fill(209, 211, 214);
-            rect(this.x, this.y, this.width, this.width);
+            this.p5.fill(209, 211, 214);
+            this.p5.rect(this.x, this.y, this.width, this.width);
             if (this.mine) {
                 // draw a red circle if it's mine
-                fill(255, 0, 0);
-                ellipse(this.x + this.width / 2, this.y + this.width / 2, this.width / 2);
+                this.p5.fill(255, 0, 0);
+                this.p5.ellipse(this.x + this.width / 2, this.y + this.width / 2, this.width / 2);
             }
             else {
                 switch(this.value) {
@@ -96,9 +98,9 @@ class Cell {
                     default:
                     {
                         // draw the value
-                        textSize(20);
-                        fill(0);
-                        text(this.value, this.x + this.width / 2, this.y + this.width / 2 + 8);
+                        this.p5.textSize(20);
+                        this.p5.fill(0);
+                        this.p5.text(this.value, this.x + this.width / 2, this.y + this.width / 2 + 8);
                     }
                 }
                 
